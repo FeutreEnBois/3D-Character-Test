@@ -5,6 +5,7 @@ using UnityEngine.Animations.Rigging;
 
 public class CharacterAiming : MonoBehaviour
 {
+
     public float turnSpeed = 15;
     public float aimDuration = 0.3f;
 
@@ -46,9 +47,15 @@ public class CharacterAiming : MonoBehaviour
         {
             weapon.StartFiring();
         }
+        if (weapon.isFiring)
+        {
+            weapon.UpadateFiring(Time.deltaTime);
+        }
         if (Input.GetButtonUp("Fire1"))
         {
             weapon.StopFiring();
         }
+
+
     }
 }
