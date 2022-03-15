@@ -63,20 +63,25 @@ public class RaycastWeapon : MonoBehaviour
 
     private void FireBullet()
     {
-        ray.origin = raycastOrigin.position;
-        ray.direction = raycastDestination.position - raycastOrigin.position;
-
         muzzleFlash.Emit(1);
-        var tracer = Instantiate(trailRenderer, ray.origin, Quaternion.identity);
-        tracer.AddPosition(ray.origin);
 
-        if (Physics.Raycast(ray, out hitInfo))
-        {
-            hitEffect.transform.position = hitInfo.point;
-            hitEffect.transform.forward = hitInfo.normal;
-            hitEffect.Emit(1);
-            tracer.transform.position = hitInfo.point;
-        }
+        //Vector3 velocity;
+        //bullet = CreateBullet(raycastOrigin.position);
+
+
+        //ray.origin = raycastOrigin.position;
+        //ray.direction = raycastDestination.position - raycastOrigin.position;
+
+        //var tracer = Instantiate(trailRenderer, ray.origin, Quaternion.identity);
+        //tracer.AddPosition(ray.origin);
+
+        //if (Physics.Raycast(ray, out hitInfo))
+        //{
+        //    hitEffect.transform.position = hitInfo.point;
+        //    hitEffect.transform.forward = hitInfo.normal;
+        //    hitEffect.Emit(1);
+        //    tracer.transform.position = hitInfo.point;
+        //}
     }
 
     public void StopFiring()
