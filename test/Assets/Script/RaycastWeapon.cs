@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,12 +10,14 @@ public class RaycastWeapon : MonoBehaviour
         public float time;
         public Vector3 initialPosition;
         public Vector3 initialVelocity;
+        public TrailRenderer tracer;
     }
 
     public bool isFiring = false;
     public float fireRate = 25; // in bullet per seconds
     public float bulletSpeed = 1000.0f;
     public float bulletDrop = 0.0f;
+    public float maxLifeTime = 10f;
     public ParticleSystem muzzleFlash;
     public ParticleSystem hitEffect;
     public Transform raycastOrigin;
@@ -33,12 +36,14 @@ public class RaycastWeapon : MonoBehaviour
         return (bullet.initialPosition) + (bullet.initialVelocity * bullet.time) + (0.5f * gravity * bullet.time * bullet.time);
     }
 
-    Bullet CreateBullet(Vector2 position, Vector2 velocity)
+    Bullet CreateBullet(Vector3 position, Vector3 velocity)
     {
         Bullet bullet = new Bullet();
         bullet.initialPosition = position;
         bullet.initialVelocity = velocity;
         bullet.time = 0.0f;
+        bullet.tracer = Instantiate(trailRenderer, position, Quaternion.identity);
+        bullet.tracer.AddPosition(position);
         return bullet;
     }
 
@@ -61,27 +66,58 @@ public class RaycastWeapon : MonoBehaviour
         }
     }
 
+    public void UpdateBullets(float deltatime)
+    {
+        SimulateBullets(deltatime);
+        DestroyBullets();
+    }
+
+    private void DestroyBullets()
+    {
+        bullets.RemoveAll(bullet => bullet.time >= maxLifeTime);
+    }
+
+    private void SimulateBullets(float deltatime)
+    {
+        bullets.ForEach(b =>
+        {
+            Vector3 p0 = GetPosition(b);
+            b.time += deltatime;
+            Vector3 p1 = GetPosition(b);
+            RaycastSegment(p0, p1, b);
+        });
+    }
+
+    void RaycastSegment(Vector3 start, Vector3 end, Bullet bullet)
+    {
+        Vector3 direction = end - start;
+        float distance = (end - start).magnitude;
+        ray.origin = start;
+        ray.direction = direction;
+        if (Physics.Raycast(ray, out hitInfo, distance))
+        {
+            hitEffect.transform.position = hitInfo.point;
+            hitEffect.transform.forward = hitInfo.normal;
+            hitEffect.Emit(1);
+
+            bullet.tracer.transform.position = hitInfo.point;
+            bullet.time = maxLifeTime;
+        }
+        else
+        {
+            bullet.tracer.transform.position = end;
+        }
+    }
+
     private void FireBullet()
     {
         muzzleFlash.Emit(1);
 
-        //Vector3 velocity;
-        //bullet = CreateBullet(raycastOrigin.position);
+        Vector3 velocity = (raycastDestination.position - raycastOrigin.position).normalized * bulletSpeed;
+        Debug.Log(raycastOrigin.position);
+        var bullet = CreateBullet(raycastOrigin.position, velocity);
+        bullets.Add(bullet);
 
-
-        //ray.origin = raycastOrigin.position;
-        //ray.direction = raycastDestination.position - raycastOrigin.position;
-
-        //var tracer = Instantiate(trailRenderer, ray.origin, Quaternion.identity);
-        //tracer.AddPosition(ray.origin);
-
-        //if (Physics.Raycast(ray, out hitInfo))
-        //{
-        //    hitEffect.transform.position = hitInfo.point;
-        //    hitEffect.transform.forward = hitInfo.normal;
-        //    hitEffect.Emit(1);
-        //    tracer.transform.position = hitInfo.point;
-        //}
     }
 
     public void StopFiring()

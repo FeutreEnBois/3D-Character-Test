@@ -51,6 +51,7 @@ public class CharacterAiming : MonoBehaviour
         {
             weapon.UpadateFiring(Time.deltaTime);
         }
+        weapon.UpdateBullets(Time.deltaTime);
         if (Input.GetButtonUp("Fire1"))
         {
             weapon.StopFiring();
